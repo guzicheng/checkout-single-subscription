@@ -3,6 +3,15 @@
 .vscode/*
 !.vscode/extensions.json
 
+## .gitignore for intellij
+*.iml
+**/*.iml
+*.versionsBackup
+*.ipr
+*.iws
+*.ids
+.idea/
+
 # Dotnet files
 **/Debug/**
 **/project-cache/**

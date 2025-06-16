@@ -97,9 +97,14 @@ public class Server {
                       .setPrice(request.queryParams("priceId"))
                       .build()
                     )
+                    .setSubscriptionData(SessionCreateParams.SubscriptionData.builder()
+                            .setTrialPeriodDays(7L) // 设置试用期为7天
+//                            .setTrialEnd(1610403705L) // 设置试用期结束时间（Unix时间戳）
+                            .build())
                     // 启用自动税费计算，需要在Stripe 后台设置商户 Origin Address
 //                    .setAutomaticTax(SessionCreateParams.AutomaticTax.builder().setEnabled(true).build())
-                    .addExpand("customer")
+                    .addExpand("subscription") // 关键：展开订阅信息
+                    .addExpand("customer") // 关键：展开客户信息
                     .addExpand("line_items.data.price") // 关键：展开订阅项中关联的 price
                     .build();
 
@@ -146,7 +151,7 @@ public class Server {
             Event event = null;
 
             try {
-                event = Webhook.constructEvent(payload, sigHeader, endpointSecret);
+                    event = Webhook.constructEvent(payload, sigHeader, endpointSecret);
             } catch (SignatureVerificationException e) {
                 // Invalid signature
                 response.status(400);
@@ -176,8 +181,9 @@ public class Server {
             return;
         }
 
-        String subscriptionId = Optional.ofNullable(session).map(Session::getSubscription).orElse(null);
+        String subscriptionId = Optional.ofNullable(session).map(Session::getSubscription).orElse("");
         String customerId = Optional.ofNullable(session).map(Session::getCustomer).orElse("");
+        System.out.println(" -- Subscription ID: " + subscriptionId);
         System.out.println(" -- Customer ID: " + customerId);
 
         Optional.ofNullable(session).map(Session::getLineItems)
